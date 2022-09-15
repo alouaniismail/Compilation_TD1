@@ -1,0 +1,5 @@
+Compilation:(traduction en un code prêt à être un code cible dans le cas général)
+On va commencer par introduire un code à 3 @ et le P-code comme le principe du language Pascal puis faire la compilation à la main en introduisant des techniques d'optimisation du nombre d'adresses à utiliser puis faire ceci sur des expressions avec des registres autant qu'on veut puis des structures de contrôle avec des labels et des goto (des sauts) sans oublier la possiblite de faire des registres booleens et l'instruction nope; qui ne fait rien au cas ou elle s'avere utile a faire.
+
+1-Compilation à la main d'expressions et de structures de controle(introduction au P-code implémentation aussi):
+
