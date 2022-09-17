@@ -2,4 +2,7 @@ Compilation:(traduction en un code prêt à être un code cible dans le cas gén
 On va commencer par introduire un code à 3 @ et le P-code comme le principe du language Pascal puis faire la compilation à la main en introduisant des techniques d'optimisation du nombre d'adresses à utiliser puis faire ceci sur des expressions avec des registres autant qu'on veut puis des structures de contrôle avec des labels et des goto (des sauts) sans oublier la possiblite de faire des registres booleens et l'instruction nope; qui ne fait rien au cas ou elle s'avere utile a faire.
 
 1-Compilation à la main d'expressions et de structures de controle(introduction au P-code implémentation aussi):
-
+2-Compilation parresseuse des booléens:
+EX4:
+Un booléen est compilé en (p,lt,lf) cad. un programme p qui branche sur lt si le booléen est juste sinon il va brancher sur lf.
+Cet exercice nous entraîne à faire cela, l'exercice suivant va nous montrer comment les implémenter ce genre de compilation "parresseuse".
