@@ -1,0 +1,40 @@
+Compilation:(traduction en un code prêt à être un code cible dans le cas général)
+
+
+
+On va commencer par introduire un code à 3 @ et le P-code comme le principe du language Pascal puis faire la compilation à la main en introduisant des techniques d'optimisation du nombre d'adresses à utiliser puis faire ceci sur des expressions avec des registres autant qu'on veut puis des structures de contrôle avec des labels et des goto (des sauts) sans oublier la possiblite de faire des registres booleens et l'instruction nope; qui ne fait rien au cas ou elle s'avere utile a faire.
+
+1-Compilation à la main d'expressions et de structures de controle(introduction au P-code implémentation aussi):
+2-Compilation parresseuse des booléens:
+Facile a retenir.
+
+
+EX4:
+Un booléen est compilé en (p,lt,lf) cad. un programme p qui branche sur lt si le booléen est juste sinon il va brancher sur lf.
+Cet exercice nous entraîne à faire cela, l'exercice suivant va nous montrer comment les implémenter ce genre de compilation "parresseuse".
+
+TD2:
+Grammaires classiques
+Syntaxe des conditionnelles et proposition d'une grammaire non ambigüe.
+[C1->if B then C2 else I (C2 définit une autre condition).
+C2->if B then C2 else C2|nop ; avec les autres modifications a faire par la suite.]
+
+Syntaxe des expressions arithmétiques (grammaire ETF:
+E->T|E+T
+F->F|T*F
+F->id|cste|(E)
+termes;facteurs.
+transformé en grammaire E'TE' tous les deux non:
+E->TE'
+E'->vide|+TE'
+T->FT'
+T'->vide|*FT'
+F->id|cste|(E)
+
+à la fin, ça se joue au niveau de F../// (s'ajoute seulement E' et T' et nommé E'TE')~dérivation courante.
+)
+Production de code pour expressions arithmétiques.
+
+Déclartions et portée de variables.(block, le premier à la montée de l'arbre gagne => récursivité à gauche car le premier declare qui gagne dans cette structure,etc...)
+
+TP: voir tout dans les commentaires, l'autre resume et les codes à faire éventuellement.

@@ -1,0 +1,181 @@
+EXO1:
+1.Rien ne se passe.
+2.1+2 s'affiche: 
+1+2
+(1) Lex : cst
+(2) Yacc : E -> cste
+(3) Lex : +
+(4) Lex : cst
+(5) Yacc : E -> cste
+on a une constante nommée 1 puis on doit l'ajouter il faut une règle de décalage via la (2). Puis il faut avoir un token + ce qui est vrai avec la constante qu'on doit remettre en décalage suivant 1+2 par règle de grammaire disponible qui est 2 soit la ligne : (5) . Cela n'affiche pas le résultat mais seulement ce qu'on a dit. Même pas la règle E->E+E.(car on a peut pas deviner dès le début, nous on a 1+2 soit id+id avec + un token id le premier pris en compte car E->id et le deuxième car E->id et car + est un token ; voilà. C'est de l'analyse lexicale ouvertement liée à une analyse syntaxique prévue.
+Rq: le fait que YACC ait choisi E->cst et lex: + au milieu présage que cette traduction a été faite en se basant sur E->E+E->cst+cst. C'est à dire, 1+2 analyse le moi YACC devine par analyse ascendante qu'il faut faire E+E via des csts, il vérifie la nature des tokens par lex.yy.c et voilà l'affichage. 
+3.; : syntax error. syntax! YACC n'a pas pu deviner le rétrogradement de cette décomposition et en tant qu'un seul composant il se demande si il appartient pas aux tokens si il existe pas une regle R->token il en trouve pas il retourne SYNTAX error.(lex.yy.c l'aide aussi)
+=>C'est YACC qui s'entretient au début.
+4.1 puis CRTL-D 2 fois pour que ça marche et ça ne reste pas statique. Cela affiche:
+(1) Lex : cst
+(2) Yacc : E -> cste
+(3) Yacc : S -> E ;
+YACC a deviné qu'on doit appliqué S->E; avec E->cste forcément car lex.yy.c lui informe ou bien l'analyseur que c'est un token de type constante donc il remet la boucle avec (2) puis enchaîne les instructions. 
+=>Le EOF en 2 fois s'interprète comme un point virgule , ###: un lien fort en deux fichiers ~retour à l'état initial. 
+======================================================
+EXO2:
+Makefile:
+all: lex.yy.c y.tab.c a.out
+lex.yy.c: calculette.l
+	flex $< (lex avec -ll à la fin)
+y.tab.c: lex.yy.c calculette.y
+	bison -y -v calculette.y #création de y.output. 
+a.out: y.tab.c
+	cc $^ -ll -o calculette
+calculette.l: analyseur lexicale.
+calculette.y: analyseur syntaxique avec les bonnes actions sémantiques pour la compilation sur le terminal de commandes.
+1-Les terminaux:
+CSTE 
+PG (
+PD )
+ID
+PLUS +
+MULT *
+PV ;
+dans calculette.l; [0-9]+ et [a-zA-Z]+ définissent les id et les constantes %token tiré de calculette.y.
+[0-9]+ est un nombre composition parfois non neutre de chiffres.
+et de meme l'autre est un char[] de longueur >=1.
+Définis dans le .y, bien déclarés dans le .l. 
+2-Les non terminaux:
+via les règles de grammaires. En fait, les terminaux sont des lexèmes d'où la recherche dans le .l.
+axiome et exp. Déclaration via les règles et repérage après le mot clé: %% qui se termine après les actions sémantiques (ce qui faudrait afficher par %%);(après %start axiome et %{#include<stdio.h>; #include<ctype.h>;%})
+axiome: gauche d'une R.(type de déclaration)
+définition: axiome:			(tabulation) axiome PV exp {}
+à la fin: axiome. (définition déclarative du côté droit de la règle)
+3.Le non terminal initial est axiome.
+=>Le language engendré est le suivant expression_arithmétique;expression_arithmétique(potentiellement null);...
+Une suite d'expressions en arithmétiques possibles soit une vraie calculatrice ou bien disons c'est un compilateur de calculatrice. 
+4.
+Si on prend que la partie exp(le 2ième non-terminal), on peut faire rouler notre grammaire d'expressions arithumétiques du tout début inclusion grammaire ambigue.
+1+2*3
+exp=>exp*exp=>exp+exp*exp
+exp=>exp+exp=>exp+exp*exp
+2 ad possibles.
+Probleme de priorite mais deja regle avec %left MULT qui donne la priorité au *.
+DONC:
+la grammaire est non ambigue vu cette condition ajoutée. 
+(non c'est juste un jeu de coloration)
+1+2;1+2
+On a essayé cela n'a pas marché. D'où le résultat.
+5.
+Premièrement dans un fichier YACC, on définit des fonctions yylex et yyerror(const char*) au début par int yylex(); void yyerror(const char* s) entre %{ et le %} avec la définition de fonctions dont on aurait besoin pour les actions sémantiques par exemple newReg freeReg et dans ce cas:
+makeNum qui démarre à 1.
+Puis les tokens:
+%token CSTE PG PD ID PLUS MULT PV
+Puis les prioritées(associativité aussi sinon conflit..):
+%left PLUS
+%left MULT
+PUIS VIENT la composante de définition des règles:
+%start axiome
+pour les actions sémantiques, il faut la stio.h et ctype.h pour les types:
+on fait ceci:->
+%{#include<stdio.h>
+#include<ctype.h>
+%}
+%%(marqueur de séparation)
+On écrit les règles et les actions sémantiques:
+axiome 	: axiome PV exp {}
+axiome: 	: exp
+exp:		: exp PLUS exp
+		|PG exp PD
+le | aligné au : espace pas tabulation du côté droit. 
+On reviendrait aux actions sémantiques après.
+Puis le 2ième marqueur de fin %%
+là vient le main mais avant yylex qui renvoie un int on l'a avec lex.yy.c
+du coup on implémente: fprintf(stderr,"%s\n",s) et on inclut lex.yy.c
+et on fait dans le main:
+yyparse();return 1;
+=>Actions sémantiques:
+Rq2: les retours dans le .l affirment les terminaux, genre dans: return(MULT) ou bien plus compliqué:
+%%
+[ \t]  ; //à ignorer les tabulations et les espaces.
+"???"
+[0-9]+ {...(printf) puis:
+---yylval=atoi(yytext)
+return(CSTE)
+et là la valeur lexicale est traduite en attribut entier pour l'analyse syntaxique-sémantique. 
+Retournons aux actions sémantiques:
+Conformes aux affichage mais un truc est bizarre:
+(on garde tjrs une récursivité à gauche)
+La compilation d'une expression y ajoute un point de virgule marqueur de fin de calcul à la fin !!!
+Voir la 2ième action sémantique.
+De même ; pas de changement.
+Structure générale:
+%%
+declaration de fonctions 
+implementation de fonctions pour les actions semantiques
+specification des tokens
+specification des priorietees sur quelques tokens
+%%
+regles de grammaires
++actions sémantiques
+%%
+implementation des fonctions restantes non utilisables avant
+inclusion de lex.yy.c
+implementation du main qui fait un yyparse() et retourne 1!<0 && !==-1.
+6.Déjà faites.
+Elle écrivent à chaque analyse du code entrant le code équivalent en mode 3@ si on choisit la convention des tds(td2).
+7.La fonction de return permet de spécifier que cette valeur est un token pour permettre de faire le lien entre les tokens de .y et ceux améliorées regroupement façon via le lien lex.yy.c.
+8.yytext de type char* définit la cste comme étant un buffer contenant la valeur de l'attribut "2" mais c'est 2 donc la vraie valeur retenue par lex et par yacc du coup (client) est atoi("2") soit 2 ; tout cela car c'est une cste de [0-9]+.
+Rq3:
+la valeur lexicale correspond à yytext (via les lexemes en strings)
+la valeur d'attribut corresond a yylval indispensable à l'analyse sémantique.(decoration de l'arbre de derivation par les valeurs : cste(yytext)=>2(valeur d'attribut sur l'arbre attribut car issu d'un lexème). 
+Rq4: les attributs sont les feuilles d'une simplex expr. arithmétique et leur évaluation à postéori. 
+====================================================================
+EXO3:
+1.
+A chaque lexème est produite une règle lex qu'on a spécifié. Puis une règle YACC en cas ce lexème pourrait être produit (parallélisme d'actions séparées mais mutuelles
+(pas de définition de MakeNum dans .l car on inclut tout le .c lex.yy.c dans calculette.y; c'est bonet le but est bien clair flex puis cc -ll à la fin résoud TOUT)
+ ; ça démarre  depuis la gauche BIEN SUR.
+ça lit le premier interroge lex (car il y a des printf dans lex AUSSI) et fait le boulot.
+PUIS INTERROGE YACC s'il existe une règle permettant de produire cela si oui ok si non passons à la suite. Quand +* et les 2 constantes sont via: (8): YACC : E->cste là commence le calcul ascendant, il y a trois constantes en priorité la multiplication => YACC: E->E*E après directement la (8). Puis retour à lex qui spécifie un ;, YACC s'en occupera, qu'est ce qu'il fait? et bien, tout SIMPLE, il fait le calcul qu'il devrait faire après celui fait ultèrieurement : E->E+E puis fait: S->E; : cela sont les étapes logiquement faites par l'interaction lex <->> yacc. 
+Rq5: le point virgule est très important, il permet de forcer la règle S->E; et du coup faires le E nécessaire, mais il est optionnel dans certains cas de configuration apprentives.
+Tout est bien expliqué ci-dessus.
+2.
+static de makeNum tout simplement(règle classique!)
+3.
+Les arbres de dérivations de E'TE' et ETF les mêmes car la priorité et si on éxecute, tout est correct genre le suivi des opérations qu'on VONT ETRE EXECUTEES.
+4.
+Oui, on veut cela car c'est conforme à la non-ambigueté.
+Proposition: toute grammaire construisant un arbre de dérivation pas ambigue aboutissant à un résultat correct par parcours des feuilles vers la racine de gauche à droite (parcours postfixe en profondeur (c'est pour la nature des EXPRESSIONS)) est admise dans le contexte.
+5.
+Passons au 4.
+============================================================================================
+4.
+1.LES $1,..,$n,$$ calculent des attributs..
+ON voudrait enrichir notre grammaire de telle sorte VAEC LE POINT VIRGULE si on tape une entrée, elle nous donne pas 'l'arbre de dérivation' seulement mais le résultat de ce calcul d'expression arithmétique SIMPLE.
+la plus difficile est awiome: axiome PV exp 
+on doit faire: $$=$1;$3 sans créer de registres??
+=>Oui, comme exp: PG exp PD car ce n'est pas un calcul à faire donc pas de "registre" où stocker le résultat mais juste une simple affectation au milieu d'un ; avec exp ajout dedans pas dérivé encore, donc ok.
+TOUT MARCHE TRES TRES BIEN.
+2.
+On a essayé précedemment de collecter dans chaque attribut la "valeur" de l'expression arithmétique qui lui correspond. (l'arbre=>attribut peut etre noeud interne.)
+=>EN UTILISANT UN CALCUL D'ATTRIBUT DANS LES ACTIONS SEMANTIQUES (noeuds ou feuilles(internes) de l'arbre de dérivation syntaxique non decore).
+En fait, ce qu'il faut faire dans le 1. on l'a fait dans le 2. et inversement...
+1.
+ajouter des printf des $$,[$1...$n].(et adapter cela a la nature de la règle de grammaire(action sémantique à effectuer)
+2.sous-arbre est un arbre=>déjà fait dans le point1.///
+==============================================================================================
+EXO5:(dernier exo)
+Traduction en portant ce code via un code de compilation de sortie en 3@.
+Astuce:
+rien E->T ou f->(e) pas de numero de registre a construire.
+Mais des relations compliquées comme:
+les operations: ON DOIT creer un nouveau registre ou stocker le resultat du calcul.
+les affectations a des id/csts: ON DOIT specifier dans le code cible l'affectation soit création de nouveaux registres de l'autre côté de la règle. (en continu)
+PARTICULIERE:
+axiome: axiome PV exp
+1+2 => 1+2 ; exp => 1+2 ; id="x"
+et pour axiome???
+on cree un nouveau numero de registre via numeroR()
+et on fait: r%d=r%d;r%d\n,$$,$1,$3. 
+VOILA. 
+Rq6: c'est logique exp on le connait pas, on doit faire une sorte de concaténation qui va être stocké dans un registre soit l'appel à: $$=numeroR() qui fait static int i=1;return i++; ca ressemblairrait plus (decalage -1/0/1) au code avec 2+3*5 qui vaut 17.
+On utilise pas les id ; c'est à 50%~~²²²² simple.
+FIN_TP__COMPILATION.
+
