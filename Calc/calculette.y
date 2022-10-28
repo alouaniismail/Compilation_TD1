@@ -40,7 +40,7 @@ int makeNum ()
 
 axiome		: axiome PV exp      {$$=numeroR();
    /*   printf("(%i) Yacc : S -> E ; S\n rslt:%d\n",makeNum(),$$);  }*/
-   printf("r%d = r%d ; r%d\n",$$,$1,$3);}
+   printf("r%d = r%d\n",$$,$3);}
 axiome		: exp                {$$=$1;}
    /*   printf("(%i) Yacc : S -> E ;\n \t rslt:%d\n",makeNum(),$$);}*/
 ;

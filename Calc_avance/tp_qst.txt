@@ -1,0 +1,8 @@
+On va essayer de générer du P-code en utilisant cette triviale grammaire.
+sous expressions:
+load
+store
+mult
+add.
+recursivite prise en compte=>crtl-d affiche add.
+reussi.

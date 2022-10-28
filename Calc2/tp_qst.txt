@@ -1,0 +1,98 @@
+On va essayer de générer du P-code en utilisant cette triviale grammaire.
+sous expressions:
+load
+store
+mult
+add.
+recursivite prise en compte=>crtl-d affiche add.
+reussi.
+=============================================================================
+E'TE': grammaire non ambigue derivee de la grammaire ETF.
+E->TE'
+T->FT'
+E'->vide|+TE'
+T'->vide|*FT'
+F->id|CSTE|(E).
+1+2*3 arbre de dérivation:
+E=>TE'
+T va donner FT' T' vide d'ou F d'ou cste d'ou 1.
+de l'autre coté E':
+VA DONNER +TE' avec::
+>>
+T->FT' et T'->*FT' donc T=>F*FT' (on a jusqu'à là: 1+F*FT'E')
+puis T'>vide et E' aussi reste 1+2*3 cat F=>cste qui donne 2,3 respectivement.
+soit: 1+2*3.
+si on regarde l'arbre de dérivation, cette grammaire est plûtot bizarre:
+E->TE' cad. E: T EP {$$=$2;} car la valeur sémantique de E se retrouve dans EP les autres ont été gérés par des plans, cad:
+TP:    {$$=$0;} (frere gauche dans l'ARD syntaxique)
+et | MULT F TP {$$=$0*$3;} $3 refère à la récursivité de TP. 
+Le terme récursif y gagne toujours comme E: T EP {$$=$2;}
+ou comme avant (4):
+axiome: axiome PV exp {$$=$3;}
+| exp {$$=$1;}
+car les calculs s'enchaînent, on désire le nouveau récursivité:
+axiome;expr;exp;expr.
+Voilà.
+(l'utilité où ca pourrait émerger ce $0).  
+syntax error apparait avec le reste pour Calc n'a pas d'importance
+=>neglige dans Calc_avance seulement si enchainement d'operations..
+=>apparait dans Calc2 de meme que Calc directement , un enlement de;puis un controle D affiche syntaxe error.(seule difference avec afficher le reste(l'instruction manquante) et puis syntax error..
+...
+FIN_TP_COMPILATION.
+RESUME:
+TD1:
+compilation a la main:
+1->nbr de registres necessaires a la compilation (#calcul que instructions de depart**)
+2->introduction au P-code.
+3->compilation des branchement conditionnels avec goto et des labels(!!)
+4->compilation parresseuse des booléens:
+(if,then,else) se compile en 3 bouts de code => un booléen a cette image il branche sur lt si vrai, branche sur lf si faux suivant le programme p soit (p,lt,lf).
+5->compilation a la main des expressions arithmétiques
+6->true,false,conjonction && disjonction. VARIABLE DE TYPE BOOLEEN + la négation d'un booléen. Ajoutons le schema recursif de traduction des expressions booléennes qui s'appuit sur la syntaxe de leurs arbres. (parcours récursif de l'arbre en profondeur de gauche à droite revient à lire l'expression soit le schéma récursif sera la lecture en profondeur de l'arbre de gauche à droite en POST-FIXE.).
+7->Optimisation du nombre de registres. Calcul selon les expressions. O sigma grand ,etc...
+Ce qui faut retenir:
+###############
+a-compilation a la main de tout et apprentissage du p-code.
+b-compilation paresseuse des booleens et retrouver l'expression grâce à un parcours en profondeur post-fixe de l'arbre 
+c-optimisation du nombre de registres suivant l'expression(estimation+applications)
+###############
+TD2:
+1->Grammaire classique: a^nb^n = L(G) grammaire non ambigue de type LL(k).
+2->Arbres de dérivations, ambigueté, languages qui définisent.
+3->grammaire COND ambigue et recherche d'une grammaire proche non ambigue.
+4&5->grammaire ETF et E'TE' pas ambigues des exprs. arithmétiques (+arbres de dérivations)
+6->grammaire ETF (A->id=E)
+**production de code et vérification sur l'arbre.
+**x=x+3 aussi..///
+**x=3*y en libérant les registres inutilisables..//
+**z=x+3*y+z sur un jeu d'actions sémantiques générant du P-code au lieu du 3@(voir concrétement le tp)
+7->grammaire block (factorisation a gauche) + arbre de dérivation simple.
+8->production d'actions sémantiques suivant la variable dans son numéro de block (utilisation d'une pile)
+Ce qu'il faut retenir:
+###############
+a-Grammaire ambigue, arbre de dérivations, languages qui définissent.
+b-Grammaire COND et sa solution:
+C->if B then I | if B then C2 else I
+C2->  if B then C2 else C2   | nop #recursivite
+I-> nop | C | C2
+c-grammaires ETF(de type LR(k)) et E'TE'(de type LL(k)) c'est pourquoi on applique l'analyse descendante sur E'TE'.(*)
+d-production de code 3@ / p-code:
+(avec liberation de registres prise en compte dans les actions semantiques)
+e-grammaire BLOCK et la solution de la pile et sa gestion via des fonction pour produire des actions sémantiques et spécifier chaque variable à son propre block.
+###############
+TP:
+a-E'TE'($0)
+b-P-code
+c-code 3@
+d-affichage du resultat final (pas de rslts intermediaires ; c'est mieux)
+La grammaire E'TE' est LL(k) , on lui applique une analyse descendante:
+Un-calcul des premiers/suivants des non-terminaux
+Deux-construction du tableau
+Trois-réclamation par décalage/réduction suivant le tableau construit(le terminal a lire et le nom terminal au sommet de la pile)..///
+Le principe du décalage et réduction se prête a des grammaires non ambigues (tables des actions²) et permet la lecture (shift) ; l'expansion puis une réduction si:
+X->aY.Zb et Z->wV => X->aYwV.b cad. on choisit une règle (l'expansion) on fait des reduce cad. ce que donne la règle on avance on depile on empile puis on fait une lecture(ce qu'on a fait là).
+Rq:
+On pourrait tout simplement décaler l'expression et suivant les règles dans la 3ieme CASE afficher shift/reduce reduce dans ce cas definit la substitution par un non-TERMINAL.
+TOUT revient au meme.
+FIN_COMPILATION.
+RDV_projet__compilation.
